@@ -14,7 +14,8 @@ model_path=$HOME/model/Qwen/Qwen2.5-0.5B-Instruct
 train_files="['$gsm8k_train_path']"
 test_files="['$gsm8k_test_path']"
 
-CUDA_LAUNCH_BLOCKING=1 python3 -m verl.trainer.main_ppo \
+#CUDA_LAUNCH_BLOCKING=1 
+python3 -m verl.trainer.main_ppo \
     data.train_files="$train_files" \
     data.val_files="$test_files" \
     data.train_batch_size=1024 \
@@ -43,7 +44,7 @@ CUDA_LAUNCH_BLOCKING=1 python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.optimizer_offload=False \
     algorithm.kl_ctrl.kl_coef=0.001 \
     trainer.critic_warmup=0 \
-    trainer.logger=['console'] \
+    trainer.logger=['console', 'mlflow'] \
     trainer.project_name='verl_example' \
     trainer.n_gpus_per_node=8 \
     trainer.nnodes=1 \
