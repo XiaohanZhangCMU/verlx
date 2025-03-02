@@ -44,7 +44,7 @@ python3 -m verl.trainer.main_ppo \
     critic.model.fsdp_config.optimizer_offload=False \
     algorithm.kl_ctrl.kl_coef=0.001 \
     trainer.critic_warmup=0 \
-    trainer.logger=['console', 'mlflow'] \
+    trainer.logger=['console','mlflow'] \
     trainer.project_name='verl_example' \
     trainer.n_gpus_per_node=8 \
     trainer.nnodes=1 \
