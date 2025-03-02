@@ -41,15 +41,25 @@ install_requires = [
   'wandb',
 ]
 
-TEST_REQUIRES = ['pytest', 'yapf', 'py-spy']
-PRIME_REQUIRES = ['pyext']
-GPU_REQUIRES = ['liger-kernel', 'flash-attn']
+extra_deps = {}
 
-extras_require = {
-  'test': TEST_REQUIRES,
-  'prime': PRIME_REQUIRES,
-  'gpu': GPU_REQUIRES,
-}
+extra_deps['test'] = [
+'pytest', 'yapf', 'py-spy'
+]
+
+extra_deps['prime'] = [
+'pyext'
+]
+
+extra_deps['gpu'] = [
+'liger-kernel', 'flash-attn'
+]
+
+extra_deps['databricks'] = [
+'mosaicml[mlflow]>=0.29.0'
+]
+
+extra_deps['all'] = sorted({dep for deps in extra_deps.values() for dep in deps})
 
 from pathlib import Path
 this_directory = Path(__file__).parent
@@ -66,7 +76,7 @@ setup(
     author_email='zhangchi.usc1992@bytedance.com, gmsheng@connect.hku.hk',
     description='verl: Volcano Engine Reinforcement Learning for LLM',
     install_requires=install_requires,
-    extras_require=extras_require,
+    extras_require=extra_deps,
     package_data={'': ['version/*'],
                   'verl': ['trainer/config/*.yaml'],},
     include_package_data=True,
