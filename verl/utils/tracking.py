@@ -15,6 +15,7 @@
 A unified tracking interface that supports logging data to different backend
 """
 import dataclasses
+import atexit
 from enum import Enum
 from functools import partial
 from pathlib import Path
@@ -136,6 +137,7 @@ class _MlflowLoggingAdapter:
                 log_system_metrics=False
             )
         self.mlflow_logger.init(state, None)
+        atexit.register(self.cleanup)
 
     def log(self, data, step):
         self.mlflow_logger.log_metrics(data, step)
@@ -143,8 +145,7 @@ class _MlflowLoggingAdapter:
         import mlflow
         mlflow.flush_async_logging()
 
-    def __del__(self):
-        print('I am here __del__')
+    def cleanup(self):
         if hasattr(self.mlflow_logger, "post_close"):
             self.mlflow_logger.post_close()
 

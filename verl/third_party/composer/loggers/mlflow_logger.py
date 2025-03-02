@@ -84,6 +84,7 @@ class MlflowMonitorProcess(multiprocessing.Process):
 
     def stop(self):
         self.exit_event.set()
+        self.join()
 
     def crash(self):
         self.crash_event.set()
@@ -315,7 +316,6 @@ class MLFlowLogger(LoggerDestination):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
 
     def init(self, state: State, logger: Logger) -> None:
-        print('I am here')
         del logger  # unused
 
         if self.run_name is None:
@@ -343,7 +343,7 @@ class MLFlowLogger(LoggerDestination):
         # available to other ranks during runtime.
         if self._rank_zero_only:
             mlflow_ids_list = [self._experiment_id, self._run_id]
-            dist.broadcast_object_list(mlflow_ids_list, src=0)
+            #dist.broadcast_object_list(mlflow_ids_list, src=0)
             self._experiment_id, self._run_id = mlflow_ids_list
 
     def after_load(self, state: State, logger: Logger) -> None:
@@ -616,15 +616,22 @@ class MLFlowLogger(LoggerDestination):
                 )
 
     def post_close(self):
-        print('I am here post_close')
+        import torch
+        print(f"DEBUG: torch = {torch}")
+        print(f"DEBUG: _global_exception_occurred = {self._global_exception_occurred}")
+
+
         if self._enabled:
             if hasattr(self, 'monitor_process') and self.monitor_process is not None:
                 # Check if there is an uncaught exception, which means `post_close()` is triggered
                 # due to program crash.
-                if isinstance(self._global_exception_occurred, torch.Tensor):
-                    finish_with_exception = (self._global_exception_occurred == 1).item()
+                if self._global_exception_occurred is not None:
+                    if isinstance(self._global_exception_occurred, torch.Tensor):
+                        finish_with_exception = (self._global_exception_occurred == 1).item()
+                    else:
+                        finish_with_exception = (self._global_exception_occurred == 1)
                 else:
-                    finish_with_exception = (self._global_exception_occurred == 1)
+                    finish_with_exception = False
                 if finish_with_exception:
                     self.monitor_process.crash()
                     return
