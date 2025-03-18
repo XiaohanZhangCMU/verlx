@@ -1,0 +1,124 @@
+name: test_verl
+image: verlai/verl:ngc-th2.4.0-cu124-vllm0.6.3-te1.7-v0.0.4
+scheduling:
+  priority: high
+  max_retries: 0
+  preemptible: false
+  retry_on_system_failure: false
+compute:
+  cluster: prod-azure-eastus2-mlserv-0-7yzjpxp1
+  gpus: 16
+command: |-
+  pip install --upgrade pip
+  pip uninstall -y pynvml
+  pip install nvidia-ml-py
+
+  git clone https://github.com/XiaohanZhangCMU/verl.git
+  cd verl && pip3 install -e .[databricks]
+  cd ..
+  git clone -b core_v0.4.0 https://github.com/NVIDIA/Megatron-LM.git
+  cp verl/patches/megatron_v4.patch  Megatron-LM/
+  cd Megatron-LM/
+  git apply megatron_v4.patch
+  pip install -e .
+  export PYTHONPATH=$PYTHONPATH:$(pwd)
+  echo $PYTHONPATH
+  cd ..
+  python verl/examples/data_preprocess/gsm8k.py --local_dir ~/data/gsm8k
+  python verl/examples/ppo_trainer/download_model.py
+  pip install opencv-fixer==0.2.5
+  python -c "from opencv_fixer import AutoFix; AutoFix()"
+
+  gsm8k_train_path=$HOME/data/gsm8k/train.parquet
+  gsm8k_test_path=$HOME/data/gsm8k/test.parquet
+  math_train_path=$HOME/data/math/train.parquet
+  math_test_path=$HOME/data/math/test.parquet
+  
+  model_path=$HOME/model/Qwen/Qwen2-7B-Instruct
+  #model_path=$HOME/model/Qwen/Qwen2.5-0.5B-Instruct
+  
+  #train_files="['$gsm8k_train_path', '$math_train_path']"
+  #test_files="['$gsm8k_test_path', '$math_test_path']"
+  
+  train_files="['$gsm8k_train_path']"
+  test_files="['$gsm8k_test_path']"
+
+  # Get local IP address
+  export LOCAL_IP=$(hostname -I | awk '{print $1}' | head -1 | cut -d' ' -f7)
+  echo "Local IP: $LOCAL_IP"
+
+  # Extract head node IP address from MASTER_ADDR
+  export HEAD_IP=$(getent hosts $MASTER_ADDR | awk '{ print $1 }')
+  echo "Head node IP: $HEAD_IP"
+
+  # Set unique VLLM_HOST_IP for each node
+  export VLLM_HOST_IP=$LOCAL_IP
+  echo "VLLM_HOST_IP: $VLLM_HOST_IP"
+
+
+  # Start Ray cluster
+  if [ "$NODE_RANK" -eq 0 ]; then
+    # Head node
+    echo "Starting Ray head node..."
+    #ray start --head --port=$MASTER_PORT --node-ip-address=$LOCAL_IP
+    ray stop || true
+    ray start --head --port=${MASTER_PORT:-6379} --dashboard-port=8265 --dashboard-host=0.0.0.0 --node-ip-address=$LOCAL_IP
+  else
+    # Worker nodes
+    echo "Starting Ray worker node..."
+    # Wait for head node to be ready
+    sleep 10
+    ray start --address=$HEAD_IP:${MASTER_PORT:-6379} --node-ip-address=$LOCAL_IP
+  fi
+
+  # Print Ray cluster status
+  ray status
+  ray list nodes  # Check if all expected nodes are connected
+
+  echo "Done printing ray status"
+
+  sleep 10
+
+  if [ "$NODE_RANK" -eq 0 ]; then
+    echo "Submitting RL job to Ray..."
+    #ray job submit --address="http://$HEAD_IP:8265" -- sh verl/examples/ppo_trainer/run_qwen2-7b.sh
+    python3 -m verl.trainer.main_ppo \
+        data.train_files="$train_files" \
+        data.val_files="$test_files" \
+        data.train_batch_size=1024 \
+        data.max_prompt_length=1024 \
+        data.max_response_length=512 \
+        actor_rollout_ref.model.path="$model_path" \
+        actor_rollout_ref.actor.optim.lr=1e-6 \
+        actor_rollout_ref.model.use_remove_padding=True \
+        actor_rollout_ref.actor.ppo_mini_batch_size=256 \
+        actor_rollout_ref.actor.ppo_micro_batch_size_per_gpu=16 \
+        actor_rollout_ref.model.enable_gradient_checkpointing=True \
+        actor_rollout_ref.actor.fsdp_config.param_offload=False \
+        actor_rollout_ref.actor.fsdp_config.optimizer_offload=False \
+        actor_rollout_ref.rollout.log_prob_micro_batch_size_per_gpu=32 \
+        actor_rollout_ref.rollout.tensor_model_parallel_size=2 \
+        actor_rollout_ref.rollout.name=vllm \
+        actor_rollout_ref.rollout.gpu_memory_utilization=0.6 \
+        actor_rollout_ref.ref.log_prob_micro_batch_size_per_gpu=32 \
+        actor_rollout_ref.ref.fsdp_config.param_offload=True \
+        critic.optim.lr=1e-5 \
+        critic.model.use_remove_padding=True \
+        critic.model.path="$model_path" \
+        critic.model.enable_gradient_checkpointing=True \
+        critic.ppo_micro_batch_size_per_gpu=32 \
+        critic.model.fsdp_config.param_offload=False \
+        critic.model.fsdp_config.optimizer_offload=False \
+        algorithm.kl_ctrl.kl_coef=0.001 \
+        trainer.critic_warmup=0 \
+        trainer.logger=['console','mlflow'] \
+        trainer.project_name='verl_example' \
+        trainer.n_gpus_per_node=8 \
+        trainer.nnodes=1 \
+        trainer.save_freq=-1 \
+        trainer.test_freq=10 \
+        trainer.total_epochs=15 $@
+    
+  fi
+
+    

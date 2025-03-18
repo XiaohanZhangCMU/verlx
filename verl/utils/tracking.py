@@ -15,6 +15,7 @@
 A unified tracking interface that supports logging data to different backend
 """
 import dataclasses
+import atexit
 from enum import Enum
 from functools import partial
 from pathlib import Path
@@ -42,10 +43,7 @@ class Tracking(object):
             self.logger['wandb'] = wandb
 
         if 'mlflow' in default_backend:
-            import mlflow
-            mlflow.start_run(run_name=experiment_name)
-            mlflow.log_params(_compute_mlflow_params_from_objects(config))
-            self.logger['mlflow'] = _MlflowLoggingAdapter()
+            self.logger['mlflow'] = _MlflowLoggingAdapter(project_name, experiment_name)
 
         if "swanlab" in default_backend:
             import swanlab
@@ -124,11 +122,32 @@ class _TensorboardAdapter:
 
 
 class _MlflowLoggingAdapter:
+    def __init__(self, project_name, experiment_name):
+        import os
+        import hashlib
+        import argparse
+        from verl.third_party.composer.loggers.mlflow_logger import MLFlowLogger
+
+        hashcode = hashlib.md5(experiment_name.encode()).hexdigest()[:4]  # Using first 4 chars
+        state = argparse.Namespace(run_name=f"{experiment_name}-{hashcode}")
+        self.mlflow_logger = MLFlowLogger(
+                experiment_name=project_name,
+                run_name=experiment_name,
+                tracking_uri=os.getenv("MLFLOW_TRACKING_URI", "databricks"),
+                log_system_metrics=False
+            )
+        self.mlflow_logger.init(state, None)
+        atexit.register(self.cleanup)
 
     def log(self, data, step):
-        import mlflow
-        mlflow.log_metrics(metrics=data, step=step)
+        self.mlflow_logger.log_metrics(data, step)
 
+        import mlflow
+        mlflow.flush_async_logging()
+
+    def cleanup(self):
+        if hasattr(self.mlflow_logger, "post_close"):
+            self.mlflow_logger.post_close()
 
 def _compute_mlflow_params_from_objects(params) -> Dict[str, Any]:
     if params is None:
