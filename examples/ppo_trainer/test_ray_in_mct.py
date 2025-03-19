@@ -16,14 +16,13 @@ def get_global_rank():
 
 def initialize_ray_cluster():
     # Ensure NCCL doesn't block
-    os.environ["TORCH_DISTRIBUTED_BACKEND"] = "gloo"
+    #os.environ["TORCH_DISTRIBUTED_BACKEND"] = "gloo"
     #dist.initialize_dist()
 
-    os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", "127.0.0.1")
-    os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
+    #os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", "127.0.0.1")
+    #os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 
-    dist.init_process_group(backend="gloo", init_method="env://")
-
+    dist.init_process_group(backend="nccl", timeout=torch.distributed.Timeout(20))
 
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
@@ -34,6 +33,7 @@ def initialize_ray_cluster():
     gathered_ips = [None] * dist.get_world_size()
     dist.all_gather_object(gathered_ips, ip_address)
     head_ip_address = gathered_ips[0]  # Use rank 0 as head
+    print(f"bigning debug {gathered_ips=}, {ip_address=}, {result.stdout=}, {get_global_rank()=}")
 
     dist.barrier()
 
@@ -45,7 +45,9 @@ def initialize_ray_cluster():
 
     if get_local_rank() == 0 and get_global_rank() != 0:
         time.sleep(10)
+        print(f"bigning debug {head_ip_address=}, {get_global_rank()=}")
         subprocess.run(f'ray start --address {head_ip_address}:6379', shell=True)
+        print(f"bigning debug ray start done")
         ray.init(address=f'{head_ip_address}:6379')
 
     dist.barrier()

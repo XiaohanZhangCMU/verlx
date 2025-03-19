@@ -9,7 +9,7 @@ compute:
   cluster: prod-azure-eastus2-mlserv-0-7yzjpxp1
   nodes: 2
   gpus: 16
-command: |2-
+command: |
   pip install --upgrade pip
   pip uninstall -y pynvml
   pip install nvidia-ml-py
