@@ -6,6 +6,18 @@ import time
 import subprocess
 import ray
 import datetime
+import socket
+
+def get_ip():
+    """Retrieve the IP address of the current node."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_address = s.getsockname()[0]
+        s.close()
+        return ip_address
+    except Exception:
+        return "127.0.0.1"
 
 def get_local_rank():
     """Retrieve the local rank of the process."""
@@ -28,14 +40,17 @@ def initialize_ray_cluster():
     torch.cuda.set_device(f'cuda:{get_local_rank()}')
 
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    ip_address = result.stdout.strip()
+    #result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    #result.stdout.strip()
+
+    ip_address = get_ip()
 
     #head_ip_address = dist.all_gather_object(ip_address)[0]
     # Gather IP addresses from all nodes
     gathered_ips = [None] * dist.get_world_size()
     dist.all_gather_object(gathered_ips, ip_address)
     head_ip_address = gathered_ips[0]  # Use rank 0 as head
+
     print(f"bigning debug {gathered_ips=}, {ip_address=}, {result.stdout=}, {get_global_rank()=}")
 
     dist.barrier()
