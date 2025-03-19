@@ -7,8 +7,9 @@ scheduling:
   retry_on_system_failure: false
 compute:
   cluster: prod-azure-eastus2-mlserv-0-7yzjpxp1
+  nodes: 2
   gpus: 16
-command: |-
+command: |2-
   pip install --upgrade pip
   pip uninstall -y pynvml
   pip install nvidia-ml-py
