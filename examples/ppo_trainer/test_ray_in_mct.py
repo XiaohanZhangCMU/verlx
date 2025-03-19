@@ -8,9 +8,6 @@ import ray
 def initialize_ray_cluster():
     # Ensure NCCL doesn't block
     os.environ["TORCH_DISTRIBUTED_BACKEND"] = "gloo"
-    os.environ["NCCL_DEBUG"] = "INFO"
-    os.environ["NCCL_BLOCKING_WAIT"] = "1"
-    os.environ["NCCL_ASYNC_ERROR_HANDLING"] = "1"
 
     dist.initialize_dist()
 
