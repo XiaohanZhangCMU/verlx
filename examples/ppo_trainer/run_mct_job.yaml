@@ -44,7 +44,8 @@ command: |-
   test_files="['$gsm8k_test_path']"
 
   # Get local IP address
-  export LOCAL_IP=$(hostname -I | awk '{print $1}' | head -1 | cut -d' ' -f7)
+  #export LOCAL_IP=$(hostname -I | awk '{print $1}' | head -1 | cut -d' ' -f7)
+  export LOCAL_IP=$(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1)
   echo "Local IP: $LOCAL_IP"
 
   # Extract head node IP address from MASTER_ADDR

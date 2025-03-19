@@ -14,6 +14,6 @@ command: |-
   pip install nvidia-ml-py
 
   git clone https://github.com/XiaohanZhangCMU/verl.git
-  cd verl
-  python examples/ppo_trainer/test_ray_in_mct.py
+  cd verl && pip3 install -e .[databricks]
+  composer examples/ppo_trainer/test_ray_in_mct.py
     

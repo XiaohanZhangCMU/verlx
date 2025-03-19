@@ -14,9 +14,6 @@ def initialize_ray_cluster():
 
     head_ip_address = dist.all_gather_object(ip_address)[0]
 
-    if dist.get_local_rank() == 0:
-        subprocess.run('pip install ray --force-reinstall', shell=True)
-
     dist.barrier()
 
     if dist.get_local_rank() == 0 and dist.get_global_rank() == 0:
