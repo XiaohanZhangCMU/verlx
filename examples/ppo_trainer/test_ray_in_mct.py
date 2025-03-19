@@ -25,6 +25,8 @@ def initialize_ray_cluster():
 
     dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=20))
 
+    torch.cuda.set_device(f'cuda:{get_local_rank()}')
+
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
     ip_address = result.stdout.strip()
