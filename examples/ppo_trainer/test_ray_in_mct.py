@@ -95,7 +95,7 @@ if __name__ == '__main__':
     dist.barrier()  # Ensure all processes complete Ray execution before teardown
     # Destroy NCCL process group safely
     print(f"Rank {get_global_rank()} destroying NCCL process group...")
-    dist.distributed.destroy_process_group()
+    dist.destroy_process_group()
 
     print(f"Rank {get_global_rank()} successfully cleaned up.")
 
