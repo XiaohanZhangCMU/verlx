@@ -22,7 +22,7 @@ def initialize_ray_cluster():
     #os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", "127.0.0.1")
     #os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 
-    dist.init_process_group(backend="nccl", timeout=torch.distributed.Timeout(20))
+    dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=20))
 
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
