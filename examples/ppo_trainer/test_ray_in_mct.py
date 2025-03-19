@@ -6,13 +6,16 @@ import subprocess
 import ray
 
 def initialize_ray_cluster():
+    # Ensure NCCL doesn't block
     os.environ["TORCH_DISTRIBUTED_BACKEND"] = "gloo"
+    os.environ["NCCL_DEBUG"] = "INFO"
+    os.environ["NCCL_BLOCKING_WAIT"] = "1"
+    os.environ["NCCL_ASYNC_ERROR_HANDLING"] = "1"
 
     dist.initialize_dist()
 
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
     ip_address = result.stdout.strip()
 
     head_ip_address = dist.all_gather_object(ip_address)[0]
@@ -36,7 +39,7 @@ def initialize_ray_cluster():
 if __name__ == '__main__':
     initialize_ray_cluster()
 
-    print('ray started. now running code')
+    print('Ray started. Now running code.')
 
     if dist.get_global_rank() == 0:
         @ray.remote
@@ -51,9 +54,17 @@ if __name__ == '__main__':
         for res in results:
             print(res)
 
-        # Shutdown Ray to clean up resources
-        ray.shutdown()
+    dist.barrier()  # Ensure all processes complete Ray execution before teardown
 
-    dist.barrier()
+    # Properly shut down Ray before NCCL
+    print(f"Rank {dist.get_global_rank()} shutting down Ray...")
+    ray.shutdown()
+
+    dist.barrier()  # Ensure Ray has shut down on all processes
+
+    # Destroy NCCL process group safely
+    print(f"Rank {dist.get_global_rank()} destroying NCCL process group...")
     torch.distributed.destroy_process_group()
+
+    print(f"Rank {dist.get_global_rank()} successfully cleaned up.")
 
