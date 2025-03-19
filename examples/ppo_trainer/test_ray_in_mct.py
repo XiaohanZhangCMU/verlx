@@ -54,14 +54,10 @@ if __name__ == '__main__':
         for res in results:
             print(res)
 
+        print(f"Rank {dist.get_global_rank()} shutting down Ray...")
+        ray.shutdown()
+
     dist.barrier()  # Ensure all processes complete Ray execution before teardown
-
-    # Properly shut down Ray before NCCL
-    print(f"Rank {dist.get_global_rank()} shutting down Ray...")
-    ray.shutdown()
-
-    dist.barrier()  # Ensure Ray has shut down on all processes
-
     # Destroy NCCL process group safely
     print(f"Rank {dist.get_global_rank()} destroying NCCL process group...")
     torch.distributed.destroy_process_group()
