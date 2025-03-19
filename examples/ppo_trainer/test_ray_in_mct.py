@@ -6,7 +6,8 @@ import subprocess
 import ray
 
 def initialize_ray_cluster():
-    dist.initialize_dist()
+    dist.initialize_dist(backend="gloo")
+
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
 
