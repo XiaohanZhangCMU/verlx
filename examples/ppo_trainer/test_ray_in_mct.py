@@ -6,7 +6,9 @@ import subprocess
 import ray
 
 def initialize_ray_cluster():
-    dist.initialize_dist(backend="gloo")
+    os.environ["TORCH_DISTRIBUTED_BACKEND"] = "gloo"
+
+    dist.initialize_dist()
 
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
     result = subprocess.run(command, shell=True, capture_output=True, text=True)
