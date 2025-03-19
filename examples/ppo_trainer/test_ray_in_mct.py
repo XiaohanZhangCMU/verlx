@@ -40,7 +40,7 @@ def initialize_ray_cluster():
     torch.cuda.set_device(f'cuda:{get_local_rank()}')
 
     command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
-    #result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
     #result.stdout.strip()
 
     ip_address = get_ip()
