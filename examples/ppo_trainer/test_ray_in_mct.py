@@ -43,9 +43,6 @@ if __name__ == '__main__':
         def test_task(x):
             return f"Ray worker {ray.get_runtime_context().node_id} processed value: {x}"
 
-        # Initialize Ray
-        ray.init(address="auto")
-
         # Run a simple test task on Ray
         futures = [test_task.remote(i) for i in range(5)]
         results = ray.get(futures)
