@@ -29,10 +29,11 @@ def initialize_ray_cluster():
 
     dist.barrier()
 
-    torch.distributed.destroy_process_group()
 
 if __name__ == '__main__':
     initialize_ray_cluster()
+
+    print('ray started. now running code')
 
     if dist.get_global_rank() == 0:
         @ray.remote
@@ -52,4 +53,7 @@ if __name__ == '__main__':
 
         # Shutdown Ray to clean up resources
         ray.shutdown()
+
+    dist.barrier()
+    torch.distributed.destroy_process_group()
 
