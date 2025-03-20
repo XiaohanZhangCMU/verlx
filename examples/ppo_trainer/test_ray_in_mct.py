@@ -35,7 +35,7 @@ def initialize_ray_cluster():
     #os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", "127.0.0.1")
     #os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 
-    dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=20))
+    dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
 
     torch.cuda.set_device(f'cuda:{get_local_rank()}')
 
