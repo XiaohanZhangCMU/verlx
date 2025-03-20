@@ -65,6 +65,8 @@ def initialize_ray_cluster():
         print("ray cluster resources")
         print(ray.cluster_resources())
 
+    torch.distributed.destroy_process_group()
+    #dist.destroy_process_group()
 
 if __name__ == '__main__':
     initialize_ray_cluster()
@@ -87,10 +89,9 @@ if __name__ == '__main__':
         print(f"Rank {get_global_rank()} shutting down Ray...")
         ray.shutdown()
 
-    dist.barrier()
+    #dist.barrier()
     # Destroy NCCL process group safely
-    print(f"Rank {get_global_rank()} destroying NCCL process group...")
-    dist.destroy_process_group()
+    #print(f"Rank {get_global_rank()} destroying NCCL process group...")
 
-    print(f"Rank {get_global_rank()} successfully cleaned up.")
+    #print(f"Rank {get_global_rank()} successfully cleaned up.")
 

@@ -44,7 +44,7 @@ command: |-
   train_files="['$gsm8k_train_path']"
   test_files="['$gsm8k_test_path']"
 
-  composer -m verl/trainer/main_ppo.py \
+  composer verl/trainer/main_ppo.py \
       --config-name ppo_trainer \
       +data.train_files="$train_files" \
       +data.val_files="$test_files" \
