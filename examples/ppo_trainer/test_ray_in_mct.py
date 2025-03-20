@@ -28,30 +28,19 @@ def get_global_rank():
     return dist.get_rank() if dist.is_initialized() else 0
 
 def initialize_ray_cluster():
-    # Ensure NCCL doesn't block
-    #os.environ["TORCH_DISTRIBUTED_BACKEND"] = "gloo"
-    #dist.initialize_dist()
-
-    #os.environ["MASTER_ADDR"] = os.environ.get("MASTER_ADDR", "127.0.0.1")
-    #os.environ["MASTER_PORT"] = os.environ.get("MASTER_PORT", "29500")
 
     dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
 
     torch.cuda.set_device(f'cuda:{get_local_rank()}')
 
-    command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
-    #result.stdout.strip()
-
     ip_address = get_ip()
 
-    #head_ip_address = dist.all_gather_object(ip_address)[0]
     # Gather IP addresses from all nodes
     gathered_ips = [None] * dist.get_world_size()
     dist.all_gather_object(gathered_ips, ip_address)
     head_ip_address = gathered_ips[0]  # Use rank 0 as head
 
-    print(f"bigning debug {gathered_ips=}, {ip_address=}, {result.stdout=}, {get_global_rank()=}")
+    print(f"bigning debug {gathered_ips=}, {ip_address=}, {get_global_rank()=}")
 
     dist.barrier()
 
@@ -98,7 +87,7 @@ if __name__ == '__main__':
         print(f"Rank {get_global_rank()} shutting down Ray...")
         ray.shutdown()
 
-    dist.barrier()  # Ensure all processes complete Ray execution before teardown
+    dist.barrier()
     # Destroy NCCL process group safely
     print(f"Rank {get_global_rank()} destroying NCCL process group...")
     dist.destroy_process_group()
