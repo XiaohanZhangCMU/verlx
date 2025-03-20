@@ -19,6 +19,72 @@ from verl.trainer.ppo.ray_trainer import RayPPOTrainer
 import ray
 import hydra
 
+import os
+import torch.distributed as dist
+import torch
+import time
+import subprocess
+import ray
+import datetime
+import socket
+
+def get_ip():
+    """Retrieve the IP address of the current node."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip_address = s.getsockname()[0]
+        s.close()
+        return ip_address
+    except Exception:
+        return "127.0.0.1"
+
+def get_local_rank():
+    """Retrieve the local rank of the process."""
+    return int(os.environ.get("LOCAL_RANK", 0))
+
+def get_global_rank():
+    """Retrieve the global rank of the process."""
+    return dist.get_rank() if dist.is_initialized() else 0
+
+def initialize_ray_cluster():
+
+    dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
+
+    torch.cuda.set_device(f'cuda:{get_local_rank()}')
+
+    ip_address = get_ip()
+
+    # Gather IP addresses from all nodes
+    gathered_ips = [None] * dist.get_world_size()
+    dist.all_gather_object(gathered_ips, ip_address)
+    head_ip_address = gathered_ips[0]  # Use rank 0 as head
+
+    print(f"bigning debug {gathered_ips=}, {ip_address=}, {get_global_rank()=}")
+
+    dist.barrier()
+
+    if get_local_rank() == 0 and get_global_rank() == 0:
+        subprocess.run('ray start --head', shell=True)
+        ray.init()
+
+    dist.barrier()
+
+    if get_local_rank() == 0 and get_global_rank() != 0:
+        time.sleep(10)
+        print(f"bigning debug {head_ip_address=}, {get_global_rank()=}")
+        subprocess.run(f'ray start --address {head_ip_address}:6379', shell=True)
+        print(f"bigning debug ray start done")
+        ray.init(address=f'{head_ip_address}:6379')
+
+    dist.barrier()
+
+    if get_local_rank() == 0 and get_global_rank() == 0:
+        result = subprocess.run('ray status', shell=True, capture_output=True, text=True)
+        print(f"bigning debug {result=}")
+        print("ray cluster resources")
+        print(ray.cluster_resources())
+
 
 @hydra.main(config_path='config', config_name='ppo_trainer', version_base=None)
 def main(config):
@@ -127,44 +193,17 @@ def main_task(config, compute_score=None):
 
 
 
-import os
-from composer.utils import dist
-import torch
-import time
-import subprocess
-
-def initialize_ray_cluster():
-    dist.initialize_dist()
-    command = "ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1"
-    result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
-    ip_address = result.stdout.strip()
-
-    head_ip_address = dist.all_gather_object(ip_address)[0]
-
-    if dist.get_local_rank() == 0:
-        subprocess.run('pip install ray --force-reinstall', shell=True)
-
-    dist.barrier()
-
-
-    if dist.get_local_rank() == 0 and dist.get_global_rank() == 0:
-        subprocess.run('ray start --head', shell=True)
-        ray.init()
-
-    dist.barrier()
-
-    if dist.get_local_rank() == 0 and dist.get_global_rank() != 0:
-        time.sleep(10)
-        subprocess.run(f'ray start --address {head_ip_address}:6379', shell=True)
-        ray.init()
-
-    dist.barrier()
-
-
-    torch.distributed.destroy_process_group()
 
 if __name__ == '__main__':
     initialize_ray_cluster()
-    if dist.get_global_rank() == 0:
+
+    if get_global_rank() == 0:
         main()
+
+    dist.barrier()
+    # Destroy NCCL process group safely
+    print(f"Rank {get_global_rank()} destroying NCCL process group...")
+    dist.destroy_process_group()
+
+    print(f"Rank {get_global_rank()} successfully cleaned up.")
+
