@@ -70,6 +70,12 @@ def initialize_ray_cluster():
 
     dist.barrier()
 
+    if get_local_rank() == 0 and get_global_rank() == 0:
+        result = subprocess.run('ray status', shell=True, capture_output=True, text=True)
+        print(f"bigning debug {result=}")
+        print("ray cluster resources")
+        print(ray.cluster_resources())
+
 
 if __name__ == '__main__':
     initialize_ray_cluster()
@@ -77,7 +83,7 @@ if __name__ == '__main__':
     print('Ray started. Now running code.')
 
     if get_global_rank() == 0:
-        @ray.remote
+        @ray.remote(num_gpus=16)
         def test_task(x):
             return f"Ray worker {ray.get_runtime_context().node_id} processed value: {x}"
 
