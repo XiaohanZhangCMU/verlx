@@ -83,12 +83,12 @@ if __name__ == '__main__':
     print('Ray started. Now running code.')
 
     if get_global_rank() == 0:
-        @ray.remote(num_gpus=16)
+        @ray.remote(num_gpus=1)
         def test_task(x):
             return f"Ray worker {ray.get_runtime_context().node_id} processed value: {x}"
 
         # Run a simple test task on Ray
-        futures = [test_task.remote(i) for i in range(20)]
+        futures = [test_task.remote(i) for i in range(100)]
         results = ray.get(futures)
 
         print("Ray Test Results:")
