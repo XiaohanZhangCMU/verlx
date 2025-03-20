@@ -85,6 +85,7 @@ def initialize_ray_cluster():
         print("ray cluster resources")
         print(ray.cluster_resources())
 
+    torch.distributed.destroy_process_group()
 
 @hydra.main(config_path='config', config_name='ppo_trainer', version_base=None)
 def main(config):
@@ -200,10 +201,10 @@ if __name__ == '__main__':
     if get_global_rank() == 0:
         main()
 
-    dist.barrier()
+    #dist.barrier()
     # Destroy NCCL process group safely
     print(f"Rank {get_global_rank()} destroying NCCL process group...")
-    dist.destroy_process_group()
+    #dist.destroy_process_group()
 
     print(f"Rank {get_global_rank()} successfully cleaned up.")
 
