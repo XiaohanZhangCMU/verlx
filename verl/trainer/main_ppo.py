@@ -64,7 +64,7 @@ def initialize_ray_cluster():
     print(f"bigning debug {gathered_ips=}, {ip_address=}, {get_global_rank()=}")
     print(f"Rank {get_global_rank()} setting env vars: {os.environ['FLASH_ATTENTION_USE_TORCH']=},{os.environ['CUDA_LAUNCH_BLOCKING']=}, {os.environ['TORCH_USE_CUDA_DSA']=}, {os.environ['HYDRA_FULL_ERROR']=}, {os.environ['VLLM_ATTENTION_BACKEND']=}")
 
-    Dist.barrier()
+    dist.barrier()
 
     if get_local_rank() == 0 and get_global_rank() == 0:
         subprocess.run('ray start --head', shell=True)
