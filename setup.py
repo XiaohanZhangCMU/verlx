@@ -41,25 +41,21 @@ install_requires = [
   'wandb',
 ]
 
-extra_deps = {}
+TEST_REQUIRES = ['pytest', 'yapf', 'py-spy']
+PRIME_REQUIRES = ['pyext']
+GEO_REQUIRES = ['mathruler']
+GPU_REQUIRES = ['liger-kernel', 'flash-attn']
+MATH_REQUIRES = ['math-verify']  # Add math-verify as an optional dependency
+DATABRICKS_REQUIRES = ['mosaicml[mlflow]>=0.29.0']
 
-extra_deps['test'] = [
-'pytest', 'yapf', 'py-spy'
-]
-
-extra_deps['prime'] = [
-'pyext'
-]
-
-extra_deps['gpu'] = [
-'liger-kernel', 'flash-attn'
-]
-
-extra_deps['databricks'] = [
-'mosaicml[mlflow]>=0.29.0'
-]
-
-extra_deps['all'] = sorted({dep for deps in extra_deps.values() for dep in deps})
+extras_require = {
+  'test': TEST_REQUIRES,
+  'prime': PRIME_REQUIRES,
+  'geo': GEO_REQUIRES,
+  'gpu': GPU_REQUIRES,
+  'math': MATH_REQUIRES,
+  'databricks': DATABRICKS_REQUIRES,
+}
 
 from pathlib import Path
 this_directory = Path(__file__).parent

@@ -57,6 +57,8 @@ test = [
 prime = ["pyext"]
 gpu = ["liger-kernel", "flash-attn"]
 databricks = ["mosaicml[mlflow]"]
+sglang = ["sglang[all]==0.4.3.post3"]
+math = ["math-verify"]  # Add math-verify as an optional dependency
 
 # URLs
 [project.urls]
