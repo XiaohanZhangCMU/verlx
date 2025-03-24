@@ -242,9 +242,27 @@ class TaskRunner:
                                 ray_worker_group_cls=ray_worker_group_cls,
                                 reward_fn=reward_fn,
                                 val_reward_fn=val_reward_fn)
+        import torch.multiprocessing as mp
+
+        method = mp.get_start_method()
+        print(f"Current start method: {method}")
+
         print(f"I am here 5: {dir(trainer.val_dataset)=}")
+        for test_data in trainer.val_dataloader:
+            print(f"I am here 5.1: {test_data=}")
+
         trainer.init_workers()
+
+        print(f"I am here 5.2")
+        import torch.multiprocessing as mp
+
+        method = mp.get_start_method()
+        print(f"Current start method: {method}")
+
+
         print(f"I am here 6: {dir(trainer.val_dataset)=}")
+        for test_data in trainer.val_dataloader:
+            print(f"I am here 6.1: {test_data=}")
         trainer.fit()
 
 

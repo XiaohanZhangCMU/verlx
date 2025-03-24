@@ -42,7 +42,7 @@ try:
 except ImportError:
     pass  # No ROCm monitor exists, ignore it
 
-multiprocessing.set_start_method("spawn", force=True)
+# multiprocessing.set_start_method("spawn", force=True)
 
 class MlflowMonitorProcess(multiprocessing.Process):
 

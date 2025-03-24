@@ -429,7 +429,7 @@ class RayPPOTrainer(object):
 
         self.train_dataloader = StatefulDataLoader(dataset=self.train_dataset,
                                                    batch_size=self.config.data.train_batch_size,
-                                                   num_workers=0,
+                                                   num_workers=1,
                                                    drop_last=True,
                                                    collate_fn=collate_fn,
                                                    sampler=sampler)
@@ -452,7 +452,7 @@ class RayPPOTrainer(object):
             # Validation datasets are sent to inference engines as a whole batch,
             # which will schedule the memory themselves.
             batch_size=len(self.val_dataset),
-            num_workers=0,
+            num_workers=1,
             shuffle=False,
             drop_last=False,
             collate_fn=collate_fn)
@@ -774,6 +774,10 @@ class RayPPOTrainer(object):
         The driver process only need to call the compute functions of the worker group through RPC to construct the PPO dataflow.
         The light-weight advantage computation is done on the driver process.
         """
+        print(f"I am here 7.0: {dir(self.val_dataloader.dataset)=}")
+        for test_data in self.val_dataloader:
+            print(f"I am here 7.0: {test_data=}")
+
         from verl.utils.tracking import Tracking
         from omegaconf import OmegaConf
 
@@ -782,10 +786,18 @@ class RayPPOTrainer(object):
                           default_backend=self.config.trainer.logger,
                           config=OmegaConf.to_container(self.config, resolve=True))
 
+        print(f"I am here 7: {dir(self.val_dataloader.dataset)=}")
+        for test_data in self.val_dataloader:
+            print(f"I am here 7: {test_data=}")
+
         self.global_steps = 0
 
         # load checkpoint before doing anything
         self._load_checkpoint()
+
+        print(f"I am here 8: {dir(self.val_dataloader.dataset)=}")
+        for test_data in self.val_dataloader:
+            print(f"I am here 8.1: {test_data=}")
 
         # perform validation before training
         # currently, we only support validation using the reward_function.
