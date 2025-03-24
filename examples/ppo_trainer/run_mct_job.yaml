@@ -27,8 +27,8 @@ command: |-
   math_train_path=$HOME/data/math/train.parquet
   math_test_path=$HOME/data/math/test.parquet
   
-  model_path=$HOME/model/Qwen/Qwen2-7B-Instruct
-  #model_path=$HOME/model/Qwen/Qwen2.5-0.5B-Instruct
+  #model_path=$HOME/model/Qwen/Qwen2-7B-Instruct
+  model_path=$HOME/model/Qwen/Qwen2.5-0.5B-Instruct
   
   #train_files="['$gsm8k_train_path', '$math_train_path']"
   #test_files="['$gsm8k_test_path', '$math_test_path']"
