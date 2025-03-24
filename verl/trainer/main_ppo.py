@@ -54,7 +54,9 @@ def initialize_ray_cluster():
 
     #dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
     #dist.init_process_group(backend="gloo", timeout=datetime.timedelta(seconds=120))
-    cdist.initialize_dist(get_device(None), timeout=120)
+    cdist.initialize_dist(get_device("gpu"), timeout=120)
+
+    cdist.barrier()
 
     #torch.cuda.set_device(f'cuda:{get_local_rank()}')
 
@@ -67,7 +69,7 @@ def initialize_ray_cluster():
 
     head_ip_address = cdist.all_gather_object(ip_address)[0]
 
-    print(f"bigning debug {ip_address=}, {get_global_rank()=}")
+    print(f"bigning debug {ip_address=}, {head_ip_address=}, {get_global_rank()=}")
     #print(f"Rank {get_global_rank()} setting env vars: {os.environ['FLASH_ATTENTION_USE_TORCH']=},{os.environ['CUDA_LAUNCH_BLOCKING']=}, {os.environ['TORCH_USE_CUDA_DSA']=}, {os.environ['HYDRA_FULL_ERROR']=}, {os.environ['VLLM_ATTENTION_BACKEND']=}")
 
     cdist.barrier()
