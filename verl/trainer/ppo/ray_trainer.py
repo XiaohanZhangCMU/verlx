@@ -105,6 +105,9 @@ class ResourcePoolManager:
         """Check if the resource pool can be satisfied in this ray cluster."""
         node_available_resources = ray.state.available_resources_per_node()
         node_available_gpus = {node: node_info.get('GPU', 0) for node, node_info in node_available_resources.items()}
+        
+        print(f"I am here 0: {node_available_resources=}")
+        print(f"I am here 1: {node_available_gpus=}")
 
         # check total required gpus can be satisfied
         total_available_gpus = sum(node_available_gpus.values())
@@ -426,7 +429,7 @@ class RayPPOTrainer(object):
 
         self.train_dataloader = StatefulDataLoader(dataset=self.train_dataset,
                                                    batch_size=self.config.data.train_batch_size,
-                                                   num_workers=8,
+                                                   num_workers=0,
                                                    drop_last=True,
                                                    collate_fn=collate_fn,
                                                    sampler=sampler)
@@ -449,10 +452,15 @@ class RayPPOTrainer(object):
             # Validation datasets are sent to inference engines as a whole batch,
             # which will schedule the memory themselves.
             batch_size=len(self.val_dataset),
-            num_workers=8,
+            num_workers=0,
             shuffle=False,
             drop_last=False,
             collate_fn=collate_fn)
+
+
+        print(f"I am here 4")
+        for test_data in self.val_dataloader:
+            print(f"I am here 4: {test_data=}")
 
         assert len(self.train_dataloader) >= 1
         assert len(
@@ -508,6 +516,8 @@ class RayPPOTrainer(object):
         sample_outputs = []
         sample_scores = []
 
+        print(f"I am here 11: {dir(self.val_dataset)=}")
+        print(f"I am here 11: {dir(self.val_dataloader)=}")
         for test_data in self.val_dataloader:
             test_batch = DataProto.from_single_dict(test_data)
 

@@ -1,5 +1,4 @@
 import os
-#from composer.utils import dist
 import torch.distributed as dist
 import torch
 import time

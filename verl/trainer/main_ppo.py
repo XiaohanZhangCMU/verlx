@@ -22,6 +22,7 @@ import hydra
 
 import os
 import torch.distributed as dist
+from composer.utils import dist as cdist
 import torch
 import time
 import subprocess
@@ -50,43 +51,48 @@ def get_global_rank():
 
 def initialize_ray_cluster():
 
-    dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
+    #dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
+    #dist.init_process_group(backend="gloo", timeout=datetime.timedelta(seconds=120))
+    cdist.initialize_dist(device='gpu', timeout=120)
 
-    torch.cuda.set_device(f'cuda:{get_local_rank()}')
+    #torch.cuda.set_device(f'cuda:{get_local_rank()}')
 
     ip_address = get_ip()
 
     # Gather IP addresses from all nodes
-    gathered_ips = [None] * dist.get_world_size()
-    dist.all_gather_object(gathered_ips, ip_address)
-    head_ip_address = gathered_ips[0]  # Use rank 0 as head
+    #gathered_ips = [None] * dist.get_world_size()
+    #dist.all_gather_object(gathered_ips, ip_address)
+    #head_ip_address = gathered_ips[0]  # Use rank 0 as head
 
-    print(f"bigning debug {gathered_ips=}, {ip_address=}, {get_global_rank()=}")
-    print(f"Rank {get_global_rank()} setting env vars: {os.environ['FLASH_ATTENTION_USE_TORCH']=},{os.environ['CUDA_LAUNCH_BLOCKING']=}, {os.environ['TORCH_USE_CUDA_DSA']=}, {os.environ['HYDRA_FULL_ERROR']=}, {os.environ['VLLM_ATTENTION_BACKEND']=}")
+    heap_ip_address = cdist.all_gather_object(ip_address)[0]
 
-    dist.barrier()
+    print(f"bigning debug {ip_address=}, {get_global_rank()=}")
+    #print(f"Rank {get_global_rank()} setting env vars: {os.environ['FLASH_ATTENTION_USE_TORCH']=},{os.environ['CUDA_LAUNCH_BLOCKING']=}, {os.environ['TORCH_USE_CUDA_DSA']=}, {os.environ['HYDRA_FULL_ERROR']=}, {os.environ['VLLM_ATTENTION_BACKEND']=}")
 
-    if get_local_rank() == 0 and get_global_rank() == 0:
+    cdist.barrier()
+
+    if cdist.get_local_rank() == 0 and cdist.get_global_rank() == 0:
         subprocess.run('ray start --head', shell=True)
         ray.init()
 
-    dist.barrier()
+    cdist.barrier()
 
-    if get_local_rank() == 0 and get_global_rank() != 0:
+    if cdist.get_local_rank() == 0 and cdist.get_global_rank() != 0:
         time.sleep(10)
         print(f"bigning debug {head_ip_address=}, {get_global_rank()=}")
         subprocess.run(f'ray start --address {head_ip_address}:6379', shell=True)
         print(f"bigning debug ray start done")
         ray.init(address=f'{head_ip_address}:6379')
 
-    dist.barrier()
+    cdist.barrier()
 
-    if get_local_rank() == 0 and get_global_rank() == 0:
+    if cdist.get_local_rank() == 0 and cdist.get_global_rank() == 0:
         result = subprocess.run('ray status', shell=True, capture_output=True, text=True)
         print(f"bigning debug {result=}")
         print("ray cluster resources")
         print(ray.cluster_resources())
 
+    cdist.barrier()
     torch.distributed.destroy_process_group()
 
 def get_custom_reward_fn(config):
@@ -187,6 +193,7 @@ class TaskRunner:
         resource_pool_spec = {
             global_pool_id: [config.trainer.n_gpus_per_node] * config.trainer.nnodes,
         }
+        print(f"I am here 3: {resource_pool_spec=}")
         mapping = {
             Role.ActorRollout: global_pool_id,
             Role.Critic: global_pool_id,
@@ -235,7 +242,9 @@ class TaskRunner:
                                 ray_worker_group_cls=ray_worker_group_cls,
                                 reward_fn=reward_fn,
                                 val_reward_fn=val_reward_fn)
+        print(f"I am here 5: {dir(trainer.val_dataset)=}")
         trainer.init_workers()
+        print(f"I am here 6: {dir(trainer.val_dataset)=}")
         trainer.fit()
 
 
@@ -244,8 +253,13 @@ class TaskRunner:
 if __name__ == '__main__':
     initialize_ray_cluster()
 
-    if get_global_rank() == 0:
+    if cdist.get_global_rank() == 0:
         main()
+        #node_available_resources = ray.state.available_resources_per_node()
+        #node_available_gpus = {node: node_info.get('GPU', 0) for node, node_info in node_available_resources.items()}
+
+        #print(f"I am here 0: {node_available_resources=}")
+        #print(f"I am here 1: {node_available_gpus=}")
 
     #dist.barrier()
     # Destroy NCCL process group safely
