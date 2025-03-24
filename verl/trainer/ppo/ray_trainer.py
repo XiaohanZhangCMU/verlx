@@ -105,7 +105,7 @@ class ResourcePoolManager:
         """Check if the resource pool can be satisfied in this ray cluster."""
         node_available_resources = ray.state.available_resources_per_node()
         node_available_gpus = {node: node_info.get('GPU', 0) for node, node_info in node_available_resources.items()}
-        
+
         print(f"I am here 0: {node_available_resources=}")
         print(f"I am here 1: {node_available_gpus=}")
 
@@ -602,6 +602,7 @@ class RayPPOTrainer(object):
         """Init resource pool and worker group"""
         self.resource_pool_manager.create_resource_pool()
 
+        print('I am here 1001')
         self.resource_pool_to_cls = {pool: {} for pool in self.resource_pool_manager.resource_pool_dict.values()}
 
         # create actor and rollout
@@ -614,6 +615,7 @@ class RayPPOTrainer(object):
         else:
             raise NotImplementedError
 
+        print('I am here 1002')
         # create critic
         if self.use_critic:
             resource_pool = self.resource_pool_manager.get_resource_pool(Role.Critic)
@@ -628,6 +630,7 @@ class RayPPOTrainer(object):
                                                   role='ref')
             self.resource_pool_to_cls[resource_pool]['ref'] = ref_policy_cls
 
+        print('I am here 1003')
         # create a reward model if reward_fn is None
         if self.use_rm:
             # we create a RM here
@@ -639,6 +642,7 @@ class RayPPOTrainer(object):
         # NOTE: if you want to use a different resource pool for each role, which can support different parallel size,
         # you should not use `create_colocated_worker_cls`. Instead, directly pass different resource pool to different worker groups.
         # See https://github.com/volcengine/verl/blob/master/examples/ray/tutorial.ipynb for more information.
+        print('I am here 1004')
         all_wg = {}
         self.wg_dicts = []
         for resource_pool, class_dict in self.resource_pool_to_cls.items():
@@ -649,21 +653,27 @@ class RayPPOTrainer(object):
             # keep the referece of WorkerDict to support ray >= 2.31. Ref: https://github.com/ray-project/ray/pull/45699
             self.wg_dicts.append(wg_dict)
 
+        print('I am here 1005')
         if self.use_critic:
             self.critic_wg = all_wg['critic']
             self.critic_wg.init_model()
 
+        print('I am here 1006')
         if self.use_reference_policy:
             self.ref_policy_wg = all_wg['ref']
             self.ref_policy_wg.init_model()
 
+        print('I am here 1007')
         if self.use_rm:
             self.rm_wg = all_wg['rm']
             self.rm_wg.init_model()
 
         # we should create rollout at the end so that vllm can have a better estimation of kv cache memory
+        print('I am here 1008')
         self.actor_rollout_wg = all_wg['actor_rollout']
+        print('I am here 1009')
         self.actor_rollout_wg.init_model()
+        print('I am here 1010')
 
     def _save_checkpoint(self):
         # path: given_path + `/global_step_{global_steps}` + `/actor`
