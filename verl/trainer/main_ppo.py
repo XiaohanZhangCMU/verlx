@@ -54,7 +54,7 @@ def initialize_ray_cluster():
 
     #dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
     #dist.init_process_group(backend="gloo", timeout=datetime.timedelta(seconds=120))
-    cdist.initialize_dist(get_device("cpu"), timeout=120)
+    cdist.initialize_dist(get_device("cpu"), timeout=1800)
 
     cdist.barrier()
 
