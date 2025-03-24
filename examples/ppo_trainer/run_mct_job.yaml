@@ -40,6 +40,7 @@ command: |-
   export CUDA_LAUNCH_BLOCKING=1
   export TORCH_USE_CUDA_DSA=1
   export HYDRA_FULL_ERROR=1
+  export RAY_num_heartbeats_timeout=300
 
   composer verl/verl/trainer/main_ppo.py \
       --config-name ppo_trainer \
