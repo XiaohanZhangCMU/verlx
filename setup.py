@@ -72,7 +72,7 @@ setup(
     author_email='zhangchi.usc1992@bytedance.com, gmsheng@connect.hku.hk',
     description='verl: Volcano Engine Reinforcement Learning for LLM',
     install_requires=install_requires,
-    extras_require=extra_deps,
+    extras_require=extras_require,
     package_data={'': ['version/*'],
                   'verl': ['trainer/config/*.yaml'],},
     include_package_data=True,
