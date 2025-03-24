@@ -23,6 +23,7 @@ import hydra
 import os
 import torch.distributed as dist
 from composer.utils import dist as cdist
+from composer.utils import get_device
 import torch
 import time
 import subprocess
@@ -53,7 +54,7 @@ def initialize_ray_cluster():
 
     #dist.init_process_group(backend="nccl", timeout=datetime.timedelta(seconds=120))
     #dist.init_process_group(backend="gloo", timeout=datetime.timedelta(seconds=120))
-    cdist.initialize_dist(device='gpu', timeout=120)
+    cdist.initialize_dist(get_device(None), timeout=120)
 
     #torch.cuda.set_device(f'cuda:{get_local_rank()}')
 
