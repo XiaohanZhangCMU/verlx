@@ -282,7 +282,7 @@ if __name__ == '__main__':
         #print(f"I am here 0: {node_available_resources=}")
         #print(f"I am here 1: {node_available_gpus=}")
 
-    else cdist.get_global_rank() == 8:
+    elif cdist.get_global_rank() == 8:
         time.sleep(60*60*2)
 
     #dist.barrier()
