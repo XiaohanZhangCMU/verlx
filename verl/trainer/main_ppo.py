@@ -98,6 +98,12 @@ def initialize_ray_cluster():
     cdist.barrier()
     torch.distributed.destroy_process_group()
 
+    if cdist.get_local_rank() == 0 and cdist.get_global_rank() == 0:
+        result = subprocess.run('ray status', shell=True, capture_output=True, text=True)
+        print(f"bigning debug {result=}")
+        print("ray cluster resources")
+        print(ray.cluster_resources())
+
 def get_custom_reward_fn(config):
     import importlib.util, os
 
