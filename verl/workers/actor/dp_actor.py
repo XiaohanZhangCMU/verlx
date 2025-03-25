@@ -33,6 +33,9 @@ import verl.utils.torch_functional as verl_F
 
 from flash_attn.bert_padding import pad_input, unpad_input, rearrange, index_first_axis
 
+from composer.utils import dist as cdist
+from torch.distributed import get_rank, get_world_size
+
 __all__ = ['DataParallelPPOActor']
 
 
@@ -60,7 +63,7 @@ class DataParallelPPOActor(BasePPOActor):
 
     def _forward_micro_batch(self, micro_batch, temperature) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Returns: 
+        Returns:
             entropy: # (bs, response_len)
             log_probs: # (bs, response_len)
         """
@@ -106,12 +109,17 @@ class DataParallelPPOActor(BasePPOActor):
 
                 input_ids_rmpad_rolled = input_ids_rmpad_rolled.squeeze(0)  # ((total_nnz / sp) + pad)
 
+                print(f"I am here 31: {cdist.get_global_rank()=}, {input_ids_rmpad=}")
+                print(f"I am here 32: {get_rank()=}, {get_world_size()=}")
+
                 # only pass input_ids and position_ids to enable flash_attn_varlen
                 output = self.actor_module(input_ids=input_ids_rmpad,
                                            attention_mask=None,
                                            position_ids=position_ids_rmpad,
                                            **multi_modal_inputs,
                                            use_cache=False)  # prevent model thinks we are generating
+                print(f"I am here 31: {cdist.get_global_rank()=}, {output=}")
+
                 logits_rmpad = output.logits.squeeze(0)  # (total_nnz, vocab_size)
 
                 logits_rmpad.div_(temperature)

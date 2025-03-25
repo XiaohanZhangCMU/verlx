@@ -77,11 +77,16 @@ class ActorRolloutRefWorker(Worker):
         super().__init__()
         self.config = config
         import torch.distributed
+        print(f"I am here 20: {self.rank=}: checking {torch.distribured.is_initialized()=}")
         if not torch.distributed.is_initialized():
             torch.distributed.init_process_group()
 
+            print(f"I am here 21: {self.rank=}: torch.distribured.init_process_group() is called")
+
         # build device mesh for FSDP
         world_size = torch.distributed.get_world_size()
+        print(f"I am here 22: {self.rank=}: {world_size=}")
+
         # TODO(sgm): support FSDP hybrid shard for larger model
         self.device_mesh = create_device_mesh(world_size=world_size, fsdp_size=self.config.actor.fsdp_config.fsdp_size)
 
