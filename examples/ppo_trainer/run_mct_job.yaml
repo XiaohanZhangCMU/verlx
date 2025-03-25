@@ -42,6 +42,8 @@ command: |-
   export HYDRA_FULL_ERROR=1
   export VLLM_ATTENTION_BACKEND=XFORMERS
 
+  rand_name=$(uuidgen)
+
   composer verl/verl/trainer/main_ppo.py \
       --config-name ppo_trainer \
       ++data.train_files="$train_files" \
@@ -73,7 +75,7 @@ command: |-
       ++algorithm.kl_ctrl.kl_coef=0.001 \
       ++trainer.critic_warmup=0 \
       ++trainer.logger=['console','mlflow'] \
-      ++trainer.project_name='verl_example' \
+      ++trainer.project_name='verl_example_${rand_name}' \
       ++trainer.n_gpus_per_node=8 \
       ++trainer.nnodes=2 \
       ++trainer.save_freq=-1 \
