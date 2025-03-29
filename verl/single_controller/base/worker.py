@@ -172,6 +172,7 @@ class Worker(WorkerHelper):
         # [SUPPORT AMD: torch]
         # torch.cuda.set_device(local_rank)
         if "AMD" in torch.cuda.get_device_name():
+            print(f"I am here 111.1: AMD is in get_device_name()")
             torch.cuda.set_device(int(cuda_visible_devices))
         ###
 

@@ -150,6 +150,7 @@ class Worker(Worker):
             # NOTE(sgm): Modify for verl, Env vars will be set by TORCHRUN.
             self.rank = self.rank if self.rank is not None else int(os.getenv("RANK", "-1"))
             local_rank = int(os.getenv("LOCAL_RANK", "0"))
+            print(f"I am here 111.2: {local_rank=}, set device to cuda:{local_rank}")
             self.device = torch.device(f"cuda:{local_rank}")
             if self.rank < 0:
                 raise ValueError("Invalid or unspecified rank.")
