@@ -87,7 +87,9 @@ class ActorRolloutRefWorker(Worker):
 
         # build device mesh for FSDP
         world_size = torch.distributed.get_world_size()
-        print(f"I am here 22.1: {self.rank=}: {world_size=}")
+        local_rank = int(os.environ['LOCAL_RANK'])
+        local_world_size = int(os.getenv("LOCAL_WORLD_SIZE", "1"))
+        print(f"I am here 22.1: {self.rank=}: {world_size=}, {local_rank=}, {local_world_size=}")
         cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
         print(f"I am here 22.2[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device=}")
 
