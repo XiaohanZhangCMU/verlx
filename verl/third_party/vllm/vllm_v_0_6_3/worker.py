@@ -156,7 +156,7 @@ class Worker(Worker):
             self.device = torch.device(f"cuda:{local_rank}")
             if self.rank < 0:
                 raise ValueError("Invalid or unspecified rank.")
-            # torch.cuda.set_device(self.device)
+            torch.cuda.set_device(self.device)
 
             # Use the world_size set by TORCHRUN
             world_size = int(os.getenv("WORLD_SIZE", "-1"))
