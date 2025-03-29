@@ -259,6 +259,7 @@ class RayWorkerGroup(WorkerGroup):
                     'WG_BACKEND': 'ray',
                     'RAY_LOCAL_WORLD_SIZE': str(local_world_size),
                     'RAY_LOCAL_RANK': str(local_rank),
+                    'LOCAL_RANK': str(local_rank),
                 }
                 if rank != 0:
                     env_vars['MASTER_ADDR'] = self._master_addr
@@ -388,7 +389,7 @@ class RayWorkerGroup(WorkerGroup):
 
 
 """
-Utilities that enables creating workers inside the same ray.Actor, 
+Utilities that enables creating workers inside the same ray.Actor,
 with code written in separate ray.Actors.
 """
 
@@ -399,7 +400,7 @@ import os
 
 def _bind_workers_method_to_parent(cls, key, user_defined_cls):
     """
-    Binds the methods of each worker to the WorkerDict. 
+    Binds the methods of each worker to the WorkerDict.
     Note that we only bind public methods that are decorated by register
     """
     for method_name in dir(user_defined_cls):
@@ -439,7 +440,7 @@ def _unwrap_ray_remote(cls):
 
 def create_colocated_worker_cls(class_dict: dict[str, RayClassWithInitArgs]):
     """
-    This function should return a class instance that delegates the calls to every 
+    This function should return a class instance that delegates the calls to every
     cls in cls_dict
     """
     cls_dict = {}
