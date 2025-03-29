@@ -87,7 +87,9 @@ class ActorRolloutRefWorker(Worker):
 
         # build device mesh for FSDP
         world_size = torch.distributed.get_world_size()
-        print(f"I am here 22: {self.rank=}: {world_size=}")
+        print(f"I am here 22.1: {self.rank=}: {world_size=}")
+        cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
+        print(f"I am here 22.2[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device=}")
 
         # TODO(sgm): support FSDP hybrid shard for larger model
         self.device_mesh = create_device_mesh(world_size=world_size, fsdp_size=self.config.actor.fsdp_config.fsdp_size)

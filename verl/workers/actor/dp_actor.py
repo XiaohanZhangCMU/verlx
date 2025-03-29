@@ -113,7 +113,7 @@ class DataParallelPPOActor(BasePPOActor):
 
                 print(f"I am here 31.1: [Rank={cdist.get_global_rank()}] input_ids_rmpad shape={input_ids_rmpad.shape} dtype={input_ids_rmpad.dtype} min={input_ids_rmpad.min()}, max={input_ids_rmpad.max()}")
                 cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
-                print(f"[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device}")
+                print(f"[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device=}")
 
                 # only pass input_ids and position_ids to enable flash_attn_varlen
                 output = self.actor_module(input_ids=input_ids_rmpad,
