@@ -74,8 +74,6 @@ def initialize_ray_cluster():
 
     cdist.barrier()
 
-    print(f"I am here 0.0: {cdist.get_global_rank()=}, {cdist.get_local_rank()=}, {os.environ.get('CUDA_VISIBLE_DEVICES')=}, {os.environ.get('LOCAL_RANK', 0)=}")
-
     if cdist.get_local_rank() == 0 and cdist.get_global_rank() == 0:
         subprocess.run('ray start --head', shell=True)
         ray.init()
@@ -281,6 +279,8 @@ class TaskRunner:
 
 if __name__ == '__main__':
     initialize_ray_cluster()
+
+    print(f"I am here 0.0: {cdist.get_global_rank()=}, {cdist.get_local_rank()=}, {os.environ.get('CUDA_VISIBLE_DEVICES')=}, {os.environ.get('LOCAL_RANK', 0)=}")
 
     if cdist.get_global_rank() == 0:
         main()
