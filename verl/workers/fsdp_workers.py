@@ -42,6 +42,8 @@ from verl.workers.sharding_manager.fsdp_ulysses import FSDPUlyssesShardingManage
 
 from codetiming import Timer
 
+from composer.utils import dist as cdist
+
 logger = logging.getLogger(__file__)
 logger.setLevel(os.getenv('VERL_PPO_LOGGING_LEVEL', 'WARN'))
 
@@ -378,6 +380,7 @@ class ActorRolloutRefWorker(Worker):
         from omegaconf import OmegaConf
         override_model_config = OmegaConf.to_container(self.config.model.get('override_config', OmegaConf.create()))
 
+        print(f"I am here 900: {cdist.get_global_rank()=}, {cdist.get_local_rank()}")
         use_remove_padding = self.config.model.get('use_remove_padding', False)
 
         if self._is_actor or self._is_rollout:

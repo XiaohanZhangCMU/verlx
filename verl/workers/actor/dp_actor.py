@@ -36,6 +36,8 @@ from flash_attn.bert_padding import pad_input, unpad_input, rearrange, index_fir
 from composer.utils import dist as cdist
 from torch.distributed import get_rank, get_world_size
 
+import os
+
 __all__ = ['DataParallelPPOActor']
 
 
@@ -109,8 +111,9 @@ class DataParallelPPOActor(BasePPOActor):
 
                 input_ids_rmpad_rolled = input_ids_rmpad_rolled.squeeze(0)  # ((total_nnz / sp) + pad)
 
-                print(f"I am here 31: {cdist.get_global_rank()=}, {input_ids_rmpad=}")
-                print(f"I am here 32: {get_rank()=}, {get_world_size()=}")
+                print(f"I am here 31.1: [Rank={cdist.get_global_rank()}] input_ids_rmpad shape={input_ids_rmpad.shape} dtype={input_ids_rmpad.dtype} min={input_ids_rmpad.min()}, max={input_ids_rmpad.max()}")
+                cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
+                print(f"[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device}")
 
                 # only pass input_ids and position_ids to enable flash_attn_varlen
                 output = self.actor_module(input_ids=input_ids_rmpad,
@@ -118,7 +121,9 @@ class DataParallelPPOActor(BasePPOActor):
                                            position_ids=position_ids_rmpad,
                                            **multi_modal_inputs,
                                            use_cache=False)  # prevent model thinks we are generating
-                print(f"I am here 31: {cdist.get_global_rank()=}, {output=}")
+                print(f"I am here 31.2: {cdist.get_global_rank()=}, {output=}")
+                print(f"[Rank={cdist.get_global_rank()}] logits shape={output.logits.shape}, dtype={output.logits.dtype}, min={output.logits.min()}, max={output.logits.max()}")
+
 
                 logits_rmpad = output.logits.squeeze(0)  # (total_nnz, vocab_size)
 
