@@ -148,10 +148,11 @@ class Worker(Worker):
             os.environ["TORCH_NCCL_AVOID_RECORD_STREAMS"] = "1"
 
             # NOTE(sgm): Modify for verl, Env vars will be set by TORCHRUN.
+            print(f"I am here 111.1: {self.local_rank=}, {self.rank=}")
             self.rank = self.rank if self.rank is not None else int(os.getenv("RANK", "-1"))
             local_rank = int(os.getenv("LOCAL_RANK", "0"))
             world_size = int(os.getenv("WORLD_SIZE", "-1"))
-            print(f"I am here 111.2: {local_rank=}, set device to cuda:{local_rank}, {world_size=},")
+            print(f"I am here 111.2: {local_rank=}, set device to cuda:{local_rank}, {world_size=}, {self.rank=}")
             self.device = torch.device(f"cuda:{local_rank}")
             if self.rank < 0:
                 raise ValueError("Invalid or unspecified rank.")
