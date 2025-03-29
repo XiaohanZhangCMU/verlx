@@ -243,6 +243,8 @@ class TaskRunner:
 
         resource_pool_manager = ResourcePoolManager(resource_pool_spec=resource_pool_spec, mapping=mapping)
 
+        cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
+        print(f"I am here 11.0[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device=}")
         trainer = RayPPOTrainer(config=config,
                                 tokenizer=tokenizer,
                                 processor=processor,
@@ -251,6 +253,8 @@ class TaskRunner:
                                 ray_worker_group_cls=ray_worker_group_cls,
                                 reward_fn=reward_fn,
                                 val_reward_fn=val_reward_fn)
+        cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
+        print(f"I am here 11.1[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device=}")
         import torch.multiprocessing as mp
 
         method = mp.get_start_method()
@@ -260,7 +264,13 @@ class TaskRunner:
         for test_data in trainer.val_dataloader:
             print(f"I am here 5.1: {test_data=}")
 
+        cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
+        print(f"I am here 11.2[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device=}")
+
         trainer.init_workers()
+
+        cuda_visible_device = os.environ["CUDA_VISIBLE_DEVICES"]
+        print(f"I am here 11.3[{cdist.get_global_rank()=}, {cdist.get_local_rank()=}]: {cuda_visible_device=}")
 
         print(f"I am here 5.2")
         import torch.multiprocessing as mp
