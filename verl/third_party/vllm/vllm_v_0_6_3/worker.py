@@ -158,7 +158,7 @@ class Worker(Worker):
                 self.device = torch.device(f"cuda:{local_rank}")
                 if self.rank < 0:
                     raise ValueError("Invalid or unspecified rank.")
-                torch.cuda.set_device(self.device)
+                #torch.cuda.set_device(self.device)
             except:
                 print(f"I am here 111.3: Failed to set device. {local_rank=}, set device to cuda:{local_rank}, {world_size=}, {self.rank=}")
                 print(f"{os.environ.get('CUDA_VISIBLE_DEVICES')=}")
