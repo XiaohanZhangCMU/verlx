@@ -281,6 +281,8 @@ class RayWorkerGroup(WorkerGroup):
                                            placement_group_bundle_idx=local_rank,
                                            use_gpu=use_gpu,
                                            num_gpus=num_gpus)
+
+                print(f"I am here 99.1: ray_cls_with_init = {ray_cls_with_init!r},  {use_gpu=}, {num_gpus=}, {pg=}, {local_rank=}, {rank=}")
                 self._workers.append(worker)
                 self._worker_names.append(name)
 
