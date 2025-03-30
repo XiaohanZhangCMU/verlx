@@ -153,10 +153,17 @@ class Worker(Worker):
             local_rank = int(os.getenv("LOCAL_RANK", "0"))
             world_size = int(os.getenv("WORLD_SIZE", "-1"))
             print(f"I am here 111.2: {local_rank=}, set device to cuda:{local_rank}, {world_size=}, {self.rank=}")
-            self.device = torch.device(f"cuda:{local_rank}")
-            if self.rank < 0:
-                raise ValueError("Invalid or unspecified rank.")
-            torch.cuda.set_device(self.device)
+
+            try:
+                self.device = torch.device(f"cuda:{local_rank}")
+                if self.rank < 0:
+                    raise ValueError("Invalid or unspecified rank.")
+                torch.cuda.set_device(self.device)
+            except:
+                print(f"I am here 111.3: Failed to set device. {local_rank=}, set device to cuda:{local_rank}, {world_size=}, {self.rank=}")
+                print(f"{os.environ.get('CUDA_VISIBLE_DEVICES')=}")
+                raise
+
 
             # Use the world_size set by TORCHRUN
             world_size = int(os.getenv("WORLD_SIZE", "-1"))
