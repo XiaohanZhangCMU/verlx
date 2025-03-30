@@ -10,6 +10,9 @@ compute:
   nodes: 2
   gpus: 16
 command: |-
+  #model_path=$HOME/model/Qwen/Qwen2.5-0.5B-Instruct
+  model_path=$HOME/model/Qwen/Qwen2-7B-Instruct
+
   pip install --upgrade pip
   pip uninstall -y pynvml
   pip install nvidia-ml-py
@@ -18,17 +21,19 @@ command: |-
   cd verl && pip3 install -e .[databricks]
   cd ..
   python verl/examples/data_preprocess/gsm8k.py --local_dir ~/data/gsm8k
-  python verl/examples/ppo_trainer/download_model.py
+  #python verl/examples/ppo_trainer/download_model.py
   pip install opencv-fixer==0.2.5
   python -c "from opencv_fixer import AutoFix; AutoFix()"
+
+
+  huggingface-cli download Qwen/Qwen2-7B-Instruct --local-dir $model_path  
+  wait 
 
   gsm8k_train_path=$HOME/data/gsm8k/train.parquet
   gsm8k_test_path=$HOME/data/gsm8k/test.parquet
   math_train_path=$HOME/data/math/train.parquet
   math_test_path=$HOME/data/math/test.parquet
   
-  #model_path=$HOME/model/Qwen/Qwen2.5-0.5B-Instruct
-  model_path=$HOME/model/Qwen/Qwen2-7B-Instruct
   
   #train_files="['$gsm8k_train_path', '$math_train_path']"
   #test_files="['$gsm8k_test_path', '$math_test_path']"
