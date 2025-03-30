@@ -164,6 +164,9 @@ class Worker(Worker):
                 print(f"{os.environ.get('CUDA_VISIBLE_DEVICES')=}")
                 raise
 
+            finally:
+                print(f"I am here 111.4: Succeed to set device. {local_rank=}, set device to cuda:{local_rank}, {world_size=}, {self.rank=}")
+
 
             # Use the world_size set by TORCHRUN
             world_size = int(os.getenv("WORLD_SIZE", "-1"))
