@@ -2,8 +2,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 import torch, sys
 
 # Define model name and local save path
-MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"  # Replace with any HF model
-#MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
+#MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"  # Replace with any HF model
+MODEL_NAME = "Qwen/Qwen2-7B-Instruct"
 LOCAL_PATH = f"/root/model/{MODEL_NAME}"  # Change this to your desired save location
 
 # Step 1: Download the model and tokenizer
