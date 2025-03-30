@@ -47,6 +47,7 @@ command: |-
   export HYDRA_FULL_ERROR=1
   export VLLM_ATTENTION_BACKEND=XFORMERS
   export RAY_DEDUP_LOGS=0
+  export VLLM_DISABLE_PYNCCL=1
 
   rand_name=$(uuidgen)
 
