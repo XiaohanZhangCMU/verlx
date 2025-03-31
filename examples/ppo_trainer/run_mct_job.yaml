@@ -1,5 +1,8 @@
 name: test_verl
-image: verlai/verl:ngc-th2.4.0-cu124-vllm0.6.3-te1.7-v0.0.4
+#image: verlai/verl:ngc-th2.4.0-cu124-vllm0.6.3-te1.7-v0.0.4
+image: zxiaohan195/verl:ngc-th2.6.0-cu124-vllm0.8.1
+#image: hiyouga/verl:ngc-th2.6.0-cu120-vllm0.8.2
+
 scheduling:
   priority: high
   max_retries: 0
@@ -17,6 +20,7 @@ command: |-
   pip install --upgrade pip
   pip uninstall -y pynvml
   pip install nvidia-ml-py
+  pip install tensordict==0.6.2
 
   git clone https://github.com/XiaohanZhangCMU/verl.git
   cd verl && pip3 install -e .[databricks]
