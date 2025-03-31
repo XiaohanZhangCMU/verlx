@@ -112,7 +112,7 @@ class vLLMRollout(BaseRollout):
             enable_sleep_mode=True,
             tensor_parallel_size=tensor_parallel_size,
             #distributed_executor_backend="external_launcher",
-            distributed_executor_backend="ray",
+            distributed_executor_backend="mp",
             dtype=config.dtype,
             enforce_eager=config.enforce_eager,
             gpu_memory_utilization=config.gpu_memory_utilization,
