@@ -38,7 +38,7 @@ install_requires = [
   'torchdata',
   'transformers',
   #'vllm<=0.6.3',
-  'vllm==0.8.1',
+  'vllm==0.8.2',
   'wandb',
 ]
 
