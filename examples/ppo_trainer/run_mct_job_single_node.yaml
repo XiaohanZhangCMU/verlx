@@ -10,8 +10,8 @@ scheduling:
   retry_on_system_failure: false
 compute:
   cluster: prod-azure-eastus2-mlserv-0-7yzjpxp1
-  nodes: 2
-  gpus: 16
+  nodes: 1
+  gpus: 8
 command: |-
   #model_path=$HOME/model/Qwen/Qwen2.5-0.5B-Instruct
   model_name=Qwen/Qwen2.5-0.5B-Instruct
@@ -99,7 +99,7 @@ command: |-
           ++trainer.logger=['console','mlflow'] \
           ++trainer.project_name='verl_example_24Mar25' \
           ++trainer.n_gpus_per_node=8 \
-          ++trainer.nnodes=2 \
+          ++trainer.nnodes=1 \
           ++trainer.save_freq=-1 \
           ++trainer.test_freq=10 \
           ++trainer.total_epochs=15  \
