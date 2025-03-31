@@ -22,7 +22,9 @@ command: |-
   pip install nvidia-ml-py
   pip install tensordict==0.6.2
 
-  git clone https://github.com/XiaohanZhangCMU/verl.git
+  #git clone https://github.com/XiaohanZhangCMU/verl.git
+  git clone --single-branch -b xiaohan/fsdp_vllm_mct_ppo_multinode https://github.com/XiaohanZhangCMU/verl.git
+
   cd verl && pip3 install -e .[databricks]
   cd ..
   python verl/examples/data_preprocess/gsm8k.py --local_dir ~/data/gsm8k
