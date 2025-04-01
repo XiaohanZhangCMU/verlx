@@ -122,7 +122,7 @@ class DataParallelPPOCritic(BasePPOCritic):
 
         # if grad_norm is not finite, skip the update
         if not torch.isfinite(grad_norm):
-            print(f"WARN: grad_norm is not finite: {grad_norm}")
+            print(f"I am here 2: WARN: grad_norm is not finite: {grad_norm}")
             self.critic_optimizer.zero_grad()
         else:
             self.critic_optimizer.step()

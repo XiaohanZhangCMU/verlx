@@ -60,7 +60,7 @@ class DataParallelPPOActor(BasePPOActor):
 
     def _forward_micro_batch(self, micro_batch, temperature) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        Returns: 
+        Returns:
             entropy: # (bs, response_len)
             log_probs: # (bs, response_len)
         """
@@ -168,7 +168,7 @@ class DataParallelPPOActor(BasePPOActor):
 
         # if grad_norm is not finite, skip the update
         if not torch.isfinite(grad_norm):
-            print(f"WARN: grad_norm is not finite: {grad_norm}")
+            print(f"I am here 1: WARN: grad_norm is not finite: {grad_norm}")
             self.actor_optimizer.zero_grad()
         else:
             self.actor_optimizer.step()
