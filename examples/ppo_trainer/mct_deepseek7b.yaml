@@ -97,7 +97,7 @@ command: |-
           ++trainer.logger=['console','mlflow'] \
           ++trainer.project_name='verl_example_24Mar25' \
           ++trainer.n_gpus_per_node=8 \
-          ++trainer.nnodes=1 \
+          ++trainer.nnodes=2 \
           ++trainer.save_freq=-1 \
           ++trainer.test_freq=10 \
           ++trainer.total_epochs=15  \
